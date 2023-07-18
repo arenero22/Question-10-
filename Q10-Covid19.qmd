@@ -1,0 +1,72 @@
+---
+title: "Q10: Covid19"
+author: "Alma Renero"
+PID: A15718243
+format: pdf
+editor: visual
+---
+
+## COVID Graph
+
+#First I downloaed the cvs file from the website provided.Then I read the file on R and assign it a new name 'covid19'
+
+```{r}
+covid19 <- read.csv("covid19_variants.csv")
+```
+
+```{r}
+head(covid19)
+```
+
+# Download the R packages: 'lubridate' and 'dplyr'. Making sure to write library to be able to use these packages
+
+```{r}
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+```
+
+#Labeled the columns on the cvs 'covid19' file. Labeled this to have on the information I need for my graph.
+
+```{r}
+date = covid19[1]
+test_date = date[1:8980,]
+date_obj = as.Date(test_date)
+variant = covid19[4]
+percentage = covid19[6]
+
+```
+
+#usingthe above labels,I made a new data frame with the information I need.
+
+```{r}
+df <- data.frame(date = date_obj, values = percentage, variants = variant)
+head(df)
+```
+
+#Using the lubridate I want to switch the date to show only the month and the year.
+
+```{r}
+df2 <- df %>%
+  group_by(month = lubridate::floor_date(date, "month"),variant_name) %>%summarize(summary_variable = mean(percentage))
+```
+
+# Created more data frame
+
+```{r}
+df3 <- df[- grep("Other", df$variant_name),]
+```
+
+```{r}
+df4 <- df3[- grep("Total", df2$variant_name),]
+df4
+```
+
+# Using ggplot I made the graph looking at the percent specimen versus the date
+
+```{r}
+percentage_plot <- ggplot(df3,aes(x = date, y = percentage))
+
+percentage_plot + geom_line(aes(color = variant_name)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + scale_x_date(date_breaks = "1 month",date_labels = "%b-%Y") +
+  labs(x= "Date", y= "Specimen Percentage")
+```
